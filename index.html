@@ -1,0 +1,2496 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>Tian × Licha — Little Adventure 💗</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  font-family:Segoe UI,Arial,sans-serif;
+  background:#100b18;
+  color:#fff;
+}
+
+body{
+  touch-action:none;
+}
+
+button{
+  font:inherit;
+}
+
+#game{
+  position:relative;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#15251d;
+}
+
+/* ================= HUD ================= */
+
+#hud{
+  position:absolute;
+  z-index:20;
+  top:10px;
+  left:10px;
+  right:10px;
+  display:flex;
+  gap:8px;
+  justify-content:space-between;
+  pointer-events:none;
+}
+
+.hudbox{
+  background:rgba(18,11,25,.78);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:14px;
+  padding:8px 11px;
+  font-size:13px;
+  backdrop-filter:blur(8px);
+}
+
+/* ================= WORLD ================= */
+
+#world{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:900px;
+  height:650px;
+  transform:translate(-50%,-50%);
+
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(255,255,255,.05) 0 3px,
+      transparent 4px
+    ),
+    radial-gradient(
+      circle at 70% 65%,
+      rgba(255,255,255,.04) 0 2px,
+      transparent 3px
+    ),
+    #315b43;
+
+  border:8px solid #173323;
+  border-radius:24px;
+  box-shadow:0 0 50px #0008;
+}
+
+.grass{
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(
+      120deg,
+      transparent 48%,
+      rgba(255,255,255,.025) 50%,
+      transparent 52%
+    );
+  background-size:42px 42px;
+}
+
+/* ================= OBJECT ================= */
+
+.obj{
+  position:absolute;
+  user-select:none;
+}
+
+.tree{
+  font-size:48px;
+  filter:drop-shadow(0 5px 2px #0005);
+}
+
+.rock{
+  font-size:34px;
+}
+
+.path{
+  position:absolute;
+  background:#9b7c58;
+  border-radius:30px;
+  opacity:.8;
+}
+
+/* ================= PLAYER ================= */
+
+#player{
+  position:absolute;
+  width:48px;
+  height:48px;
+  font-size:40px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  z-index:10;
+
+  transition:transform .05s linear;
+
+  filter:drop-shadow(0 5px 3px #0007);
+}
+
+/* ================= COLLECTIBLE ================= */
+
+.collect,
+.interact{
+  position:absolute;
+  z-index:8;
+  cursor:pointer;
+}
+
+.heart{
+  font-size:31px;
+  animation:float 1.3s ease-in-out infinite;
+  filter:drop-shadow(0 0 8px #ff7ba8);
+}
+
+@keyframes float{
+  50%{
+    transform:translateY(-7px) scale(1.08);
+  }
+}
+
+.coin{
+  font-size:29px;
+}
+
+.sign{
+  font-size:32px;
+}
+
+.chest{
+  font-size:42px;
+}
+
+/* ================= HINT ================= */
+
+#hint{
+  position:absolute;
+  z-index:21;
+
+  left:50%;
+  bottom:135px;
+
+  transform:translateX(-50%);
+
+  width:min(520px,88%);
+
+  background:rgba(15,9,20,.9);
+  border:1px solid #ffffff33;
+
+  border-radius:16px;
+
+  padding:12px 15px;
+
+  text-align:center;
+  font-size:14px;
+
+  opacity:0;
+
+  transition:.3s;
+
+  pointer-events:none;
+}
+
+#hint.show{
+  opacity:1;
+}
+
+/* ================= CONTROLS ================= */
+
+#controls{
+  position:absolute;
+  z-index:30;
+
+  left:15px;
+  bottom:18px;
+
+  width:155px;
+  height:155px;
+}
+
+.ctrl{
+  position:absolute;
+
+  width:52px;
+  height:52px;
+
+  border:1px solid #ffffff35;
+  border-radius:16px;
+
+  background:#24182dcc;
+  color:#fff;
+
+  font-size:24px;
+
+  box-shadow:0 5px 15px #0005;
+}
+
+.ctrl:active{
+  transform:scale(.92);
+  background:#5a365f;
+}
+
+#up{
+  left:52px;
+  top:0;
+}
+
+#left{
+  left:0;
+  top:52px;
+}
+
+#down{
+  left:52px;
+  top:104px;
+}
+
+#right{
+  left:104px;
+  top:52px;
+}
+
+/* ================= ACTION BUTTON ================= */
+
+#action{
+  position:absolute;
+  z-index:30;
+
+  right:18px;
+  bottom:35px;
+
+  width:72px;
+  height:72px;
+
+  border-radius:50%;
+
+  border:2px solid #ffffff55;
+
+  background:#e25a91;
+  color:#fff;
+
+  font-size:27px;
+
+  box-shadow:0 6px 18px #0006;
+}
+
+/* ================= OVERLAY ================= */
+
+#overlay{
+  position:absolute;
+  z-index:100;
+
+  inset:0;
+
+  background:rgba(9,6,14,.86);
+
+  display:none;
+
+  align-items:center;
+  justify-content:center;
+
+  padding:18px;
+}
+
+.panel{
+  width:min(600px,96%);
+  max-height:92vh;
+  overflow:auto;
+
+  background:
+    linear-gradient(
+      145deg,
+      #28182f,
+      #15101d
+    );
+
+  border:1px solid #ffffff22;
+
+  border-radius:24px;
+
+  padding:24px;
+
+  box-shadow:0 20px 60px #0009;
+
+  text-align:center;
+}
+
+.panel h1{
+  margin:0 0 10px;
+  font-size:27px;
+}
+
+.panel h2{
+  margin:0 0 10px;
+}
+
+.panel p{
+  line-height:1.55;
+  color:#e9dfea;
+}
+
+/* ================= BUTTON ================= */
+
+.primary,
+.choice{
+  border:0;
+
+  border-radius:13px;
+
+  padding:12px 18px;
+
+  margin:6px;
+
+  background:#d85a91;
+
+  color:#fff;
+
+  font-weight:700;
+
+  cursor:pointer;
+}
+
+.choice{
+  display:block;
+  width:100%;
+
+  background:#3b2944;
+
+  text-align:left;
+}
+
+.choice:hover{
+  background:#5b3c62;
+}
+
+.small{
+  font-size:12px;
+  color:#b9aabd;
+}
+
+/* ================= PROGRESS ================= */
+
+.progress{
+  height:8px;
+
+  background:#ffffff16;
+
+  border-radius:10px;
+
+  overflow:hidden;
+
+  margin:12px 0;
+}
+
+.progress i{
+  display:block;
+
+  height:100%;
+  width:0;
+
+  background:#ed709f;
+
+  transition:.4s;
+}
+
+/* ================= PUZZLE ================= */
+
+.symbols{
+  display:flex;
+
+  gap:9px;
+
+  justify-content:center;
+
+  margin:18px 0;
+
+  flex-wrap:wrap;
+}
+
+.sym{
+  width:58px;
+  height:58px;
+
+  border-radius:13px;
+
+  border:1px solid #ffffff25;
+
+  background:#3a2941;
+
+  color:#fff;
+
+  font-size:26px;
+}
+
+/* ================= CODE ================= */
+
+.codeinput{
+  width:160px;
+
+  text-align:center;
+
+  letter-spacing:7px;
+
+  font-size:24px;
+
+  padding:10px;
+
+  border-radius:12px;
+
+  border:1px solid #ffffff33;
+
+  background:#120d18;
+
+  color:#fff;
+}
+
+/* ================= INTRO ================= */
+
+#intro{
+  position:absolute;
+
+  z-index:200;
+
+  inset:0;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  padding:20px;
+
+  background:
+    radial-gradient(
+      circle at 50% 35%,
+      #5b284c 0,
+      #241329 38%,
+      #0f0915 75%
+    );
+}
+
+.introbox{
+  max-width:560px;
+
+  text-align:center;
+}
+
+.logo{
+  font-size:70px;
+
+  animation:pulse 1.8s infinite;
+}
+
+@keyframes pulse{
+  50%{
+    transform:scale(1.08);
+  }
+}
+
+.introbox h1{
+  font-size:clamp(28px,7vw,48px);
+
+  margin:5px 0;
+}
+
+.introbox p{
+  color:#ddcfe0;
+
+  line-height:1.6;
+}
+
+/* ================= TOAST ================= */
+
+#toast{
+  position:absolute;
+
+  z-index:150;
+
+  top:70px;
+  left:50%;
+
+  transform:
+    translateX(-50%)
+    translateY(-15px);
+
+  background:#21152a;
+
+  border:1px solid #ffffff2b;
+
+  padding:10px 16px;
+
+  border-radius:15px;
+
+  opacity:0;
+
+  transition:.3s;
+
+  pointer-events:none;
+
+  text-align:center;
+
+  max-width:90%;
+}
+
+#toast.show{
+  opacity:1;
+
+  transform:
+    translateX(-50%)
+    translateY(0);
+}
+
+/* ================= FINAL MESSAGE ================= */
+
+.memory{
+  background:#ffffff0b;
+
+  border-radius:15px;
+
+  padding:12px;
+
+  margin:8px 0;
+
+  text-align:left;
+}
+
+/* ================= MOBILE ================= */
+
+@media(max-width:600px){
+
+  #world{
+    width:760px;
+    height:560px;
+  }
+
+  .panel{
+    padding:19px;
+  }
+
+  .hudbox{
+    font-size:11px;
+    padding:7px 8px;
+  }
+
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+<!-- ================= INTRO ================= -->
+
+<div id="intro">
+
+  <div class="introbox">
+
+    <div class="logo">
+      🐰💗
+    </div>
+
+    <h1>
+      Tian × Licha
+    </h1>
+
+    <h2>
+      Little Adventure
+    </h2>
+
+    <p>
+      Ini bukan website biasa.
+      Licha harus menjelajah, mencari benda tersembunyi,
+      memecahkan puzzle, dan jangan gampang percaya sama
+      semua yang kelihatan mencurigakan. 😭
+    </p>
+
+    <button
+      class="primary"
+      onclick="startGame()"
+    >
+      MULAI PETUALANGAN ✨
+    </button>
+
+    <p class="small">
+      Bisa dimainkan di HP maupun laptop.
+    </p>
+
+  </div>
+
+</div>
+
+
+<!-- ================= HUD ================= -->
+
+<div id="hud">
+
+  <div class="hudbox">
+    ❤️ <span id="heartCount">0</span>/3
+  </div>
+
+  <div class="hudbox">
+    ⭐ <span id="quest">Cari 3 hati</span>
+  </div>
+
+</div>
+
+
+<!-- ================= WORLD ================= -->
+
+<div id="world">
+
+  <div class="grass"></div>
+
+  <!-- Jalan -->
+
+  <div
+    class="path"
+    style="
+      left:70px;
+      top:280px;
+      width:760px;
+      height:80px;
+    "
+  ></div>
+
+  <div
+    class="path"
+    style="
+      left:410px;
+      top:50px;
+      width:80px;
+      height:550px;
+    "
+  ></div>
+
+
+  <!-- Pohon -->
+
+  <div
+    class="obj tree"
+    style="left:65px;top:55px"
+  >
+    🌳
+  </div>
+
+  <div
+    class="obj tree"
+    style="left:155px;top:465px"
+  >
+    🌳
+  </div>
+
+  <div
+    class="obj tree"
+    style="left:760px;top:65px"
+  >
+    🌲
+  </div>
+
+  <div
+    class="obj tree"
+    style="left:700px;top:475px"
+  >
+    🌳
+  </div>
+
+
+  <!-- Batu -->
+
+  <div
+    class="obj rock"
+    style="left:285px;top:230px"
+  >
+    🪨
+  </div>
+
+  <div
+    class="obj rock"
+    style="left:565px;top:395px"
+  >
+    🪨
+  </div>
+
+  <div
+    class="obj rock"
+    style="left:585px;top:165px"
+  >
+    🪨
+  </div>
+
+
+  <!-- HATI -->
+
+  <div
+    class="collect heart"
+    id="heart1"
+    style="left:120px;top:200px"
+  >
+    ❤️
+  </div>
+
+  <div
+    class="collect heart"
+    id="heart2"
+    style="left:650px;top:320px"
+  >
+    ❤️
+  </div>
+
+  <div
+    class="collect heart"
+    id="heart3"
+    style="left:450px;top:500px"
+  >
+    ❤️
+  </div>
+
+
+  <!-- BENDA INTERAKTIF -->
+
+  <div
+    class="interact"
+    style="left:235px;top:90px"
+    onclick="signHint()"
+  >
+    📜
+  </div>
+
+  <div
+    class="interact"
+    style="left:770px;top:275px"
+    onclick="openTrick()"
+  >
+    🎁
+  </div>
+
+  <div
+    class="interact"
+    style="left:270px;top:420px"
+    onclick="openPuzzle()"
+  >
+    🧩
+  </div>
+
+  <div
+    class="interact"
+    style="left:735px;top:430px"
+    onclick="openRiddle()"
+  >
+    ❓
+  </div>
+
+  <div
+    class="interact"
+    style="left:420px;top:80px"
+    onclick="openOdd()"
+  >
+    🔎
+  </div>
+
+  <div
+    class="interact"
+    style="left:395px;top:285px"
+    onclick="finalGate()"
+  >
+    🚪
+  </div>
+
+
+  <!-- PLAYER -->
+
+  <div id="player">
+    🐰
+  </div>
+
+</div>
+
+
+<!-- ================= HINT ================= -->
+
+<div id="hint"></div>
+
+<div id="toast"></div>
+
+
+<!-- ================= CONTROLS ================= -->
+
+<div id="controls">
+
+  <button
+    class="ctrl"
+    id="up"
+  >
+    ▲
+  </button>
+
+  <button
+    class="ctrl"
+    id="left"
+  >
+    ◀
+  </button>
+
+  <button
+    class="ctrl"
+    id="down"
+  >
+    ▼
+  </button>
+
+  <button
+    class="ctrl"
+    id="right"
+  >
+    ▶
+  </button>
+
+</div>
+
+
+<!-- ================= ACTION ================= -->
+
+<button
+  id="action"
+  onclick="interactNearby()"
+>
+  ✨
+</button>
+
+
+<!-- ================= POPUP ================= -->
+
+<div id="overlay">
+
+  <div
+    class="panel"
+    id="panel"
+  ></div>
+
+  </div>
+  <script>
+
+const player = {
+  x:430,
+  y:315,
+  speed:4
+};
+
+const keys = {
+  up:false,
+  down:false,
+  left:false,
+  right:false
+};
+
+let hearts = 0;
+let puzzleDone = false;
+let trickDone = false;
+let riddleDone = false;
+let oddDone = false;
+let gateDone = false;
+
+let codeParts = [];
+
+
+/* ================= HELPER ================= */
+
+function $(id){
+  return document.getElementById(id);
+}
+
+
+/* ================= START ================= */
+
+function startGame(){
+
+  $("intro").style.display = "none";
+
+  toast(
+    "Petualangan dimulai! Cari 3 ❤️ dulu."
+  );
+
+}
+
+
+/* ================= TOAST ================= */
+
+function toast(message){
+
+  const el = $("toast");
+
+  el.textContent = message;
+
+  el.classList.add("show");
+
+  clearTimeout(window.toastTimer);
+
+  window.toastTimer = setTimeout(function(){
+
+    el.classList.remove("show");
+
+  },2300);
+
+}
+
+
+/* ================= HINT ================= */
+
+function hint(message){
+
+  const el = $("hint");
+
+  el.textContent = message;
+
+  el.classList.add("show");
+
+  clearTimeout(window.hintTimer);
+
+  window.hintTimer = setTimeout(function(){
+
+    el.classList.remove("show");
+
+  },4200);
+
+}
+
+
+/* ================= HUD ================= */
+
+function updateHUD(){
+
+  $("heartCount").textContent = hearts;
+
+
+  if(hearts < 3){
+
+    $("quest").textContent =
+      "Cari " + (3-hearts) + " hati lagi";
+
+  }
+
+  else if(!puzzleDone){
+
+    $("quest").textContent =
+      "Cari 🧩 dan pecahkan";
+
+  }
+
+  else if(!trickDone){
+
+    $("quest").textContent =
+      "Jangan tertipu 🎁";
+
+  }
+
+  else if(!riddleDone){
+
+    $("quest").textContent =
+      "Jawab ❓";
+
+  }
+
+  else if(!oddDone){
+
+    $("quest").textContent =
+      "Cari yang aneh 🔎";
+
+  }
+
+  else if(!gateDone){
+
+    $("quest").textContent =
+      "Buka 🚪";
+
+  }
+
+  else{
+
+    $("quest").textContent =
+      "Selesai! 💌";
+
+  }
+
+}
+
+
+/* ================= COLLECT HEART ================= */
+
+function collect(id){
+
+  const el = $(id);
+
+  if(el.style.display === "none"){
+    return;
+  }
+
+  el.style.display = "none";
+
+  hearts++;
+
+  toast(
+    "Dapat ❤️! Tapi masih ada yang tersembunyi..."
+  );
+
+  updateHUD();
+
+
+  if(hearts === 3){
+
+    toast(
+      "Semua hati terkumpul! Sekarang cari puzzle 🧩."
+    );
+
+  }
+
+}
+
+
+/* ================= HEART CLICK ================= */
+
+["heart1","heart2","heart3"].forEach(function(id){
+
+  $(id).addEventListener(
+    "click",
+    function(){
+
+      collect(id);
+
+    }
+  );
+
+});
+
+
+/* ================= OBSTACLES ================= */
+
+const obstacles = [
+
+  {
+    x:55,
+    y:45,
+    w:75,
+    h:75
+  },
+
+  {
+    x:145,
+    y:450,
+    w:75,
+    h:75
+  },
+
+  {
+    x:750,
+    y:55,
+    w:75,
+    h:75
+  },
+
+  {
+    x:690,
+    y:465,
+    w:75,
+    h:75
+  },
+
+  {
+    x:275,
+    y:220,
+    w:60,
+    h:60
+  },
+
+  {
+    x:555,
+    y:385,
+    w:60,
+    h:60
+  },
+
+  {
+    x:575,
+    y:155,
+    w:60,
+    h:60
+  }
+
+];
+
+
+/* ================= PLAYER MOVEMENT ================= */
+
+function move(){
+
+  let dx =
+    (keys.right ? 1 : 0) -
+    (keys.left ? 1 : 0);
+
+  let dy =
+    (keys.down ? 1 : 0) -
+    (keys.up ? 1 : 0);
+
+
+  if(dx && dy){
+
+    dx *= 0.707;
+
+    dy *= 0.707;
+
+  }
+
+
+  let nx =
+    player.x +
+    dx * player.speed;
+
+  let ny =
+    player.y +
+    dy * player.speed;
+
+
+  nx = Math.max(
+    20,
+    Math.min(830,nx)
+  );
+
+  ny = Math.max(
+    20,
+    Math.min(575,ny)
+  );
+
+
+  if(!hitObstacle(nx,ny)){
+
+    player.x = nx;
+    player.y = ny;
+
+  }
+
+
+  $("player").style.left =
+    player.x + "px";
+
+  $("player").style.top =
+    player.y + "px";
+
+
+  checkNearby();
+
+  requestAnimationFrame(move);
+
+}
+
+
+/* ================= COLLISION ================= */
+
+function hitObstacle(x,y){
+
+  const r = {
+
+    x:x+7,
+    y:y+7,
+
+    w:34,
+    h:34
+
+  };
+
+
+  return obstacles.some(function(o){
+
+    return (
+
+      r.x < o.x + o.w &&
+
+      r.x + r.w > o.x &&
+
+      r.y < o.y + o.h &&
+
+      r.y + r.h > o.y
+
+    );
+
+  });
+
+}
+
+
+/* ================= DISTANCE ================= */
+
+function distTo(x,y){
+
+  return Math.hypot(
+
+    player.x - x,
+    player.y - y
+
+  );
+
+}
+
+
+/* ================= NEARBY ================= */
+
+function checkNearby(){
+
+  const things = [
+
+    [120,200,"❤️"],
+
+    [650,320,"❤️"],
+
+    [450,500,"❤️"],
+
+    [235,90,"📜"],
+
+    [770,275,"🎁"],
+
+    [270,420,"🧩"],
+
+    [735,430,"❓"],
+
+    [420,80,"🔎"],
+
+    [395,285,"🚪"]
+
+  ];
+
+
+  let nearest = null;
+
+  let md = 65;
+
+
+  for(const t of things){
+
+    const d =
+      distTo(t[0],t[1]);
+
+
+    if(d < md){
+
+      md = d;
+
+      nearest = t;
+
+    }
+
+  }
+
+
+  if(nearest){
+
+    hint(
+      "Tekan ✨ untuk berinteraksi dengan "
+      + nearest[2]
+    );
+
+  }
+
+}
+
+
+/* ================= INTERACT ================= */
+
+function interactNearby(){
+
+  const items = [
+
+    [
+      120,
+      200,
+      function(){
+        collect("heart1");
+      }
+    ],
+
+    [
+      650,
+      320,
+      function(){
+        collect("heart2");
+      }
+    ],
+
+    [
+      450,
+      500,
+      function(){
+        collect("heart3");
+      }
+    ],
+
+    [
+      235,
+      90,
+      signHint
+    ],
+
+    [
+      770,
+      275,
+      openTrick
+    ],
+
+    [
+      270,
+      420,
+      openPuzzle
+    ],
+
+    [
+      735,
+      430,
+      openRiddle
+    ],
+
+    [
+      420,
+      80,
+      openOdd
+    ],
+
+    [
+      395,
+      285,
+      finalGate
+    ]
+
+  ];
+
+
+  let best = null;
+
+  let md = 70;
+
+
+  for(const i of items){
+
+    const d =
+      distTo(i[0],i[1]);
+
+
+    if(d < md){
+
+      md = d;
+
+      best = i;
+
+    }
+
+  }
+
+
+  if(best){
+
+    best[2]();
+
+  }
+
+  else{
+
+    toast(
+      "Nggak ada apa-apa di sini... 👀"
+    );
+
+  }
+
+}
+
+
+/* ================= SIGN ================= */
+
+function signHint(){
+
+  hint(
+    "📜 Tulisan di papan: " +
+    "'Tidak semua hadiah membawa hadiah. " +
+    "Dan tidak semua yang aneh itu salah.'"
+  );
+
+}
+
+
+/* ================= PANEL ================= */
+
+function openPanel(html){
+
+  $("panel").innerHTML = html;
+
+  $("overlay").style.display = "flex";
+
+}
+
+
+function closePanel(){
+
+  $("overlay").style.display = "none";
+
+}
+
+
+/* ================= PUZZLE ================= */
+
+function openPuzzle(){
+
+  if(hearts < 3){
+
+    toast(
+      "Kumpulkan 3 ❤️ dulu."
+    );
+
+    return;
+
+  }
+
+
+  if(puzzleDone){
+
+    toast(
+      "Puzzle ini sudah selesai."
+    );
+
+    return;
+
+  }
+
+
+  openPanel(`
+
+    <h2>🧩 Puzzle Simbol</h2>
+
+    <p>
+      Urutkan tombol dari
+      <b>bulan → bintang → hati → petir</b>.
+      <br><br>
+
+      Tekan simbol satu per satu.
+      Kalau salah, urutannya reset.
+    </p>
+
+
+    <div class="symbols">
+
+      <button
+        class="sym"
+        onclick="pickSym('🌙')"
+      >
+        🌙
+      </button>
+
+
+      <button
+        class="sym"
+        onclick="pickSym('⚡')"
+      >
+        ⚡
+      </button>
+
+
+      <button
+        class="sym"
+        onclick="pickSym('❤️')"
+      >
+        ❤️
+      </button>
+
+
+      <button
+        class="sym"
+        onclick="pickSym('⭐')"
+      >
+        ⭐
+      </button>
+
+    </div>
+
+
+    <p
+      id="symStatus"
+      class="small"
+    >
+      Urutan: —
+    </p>
+
+
+    <button
+      class="primary"
+      onclick="closePanel()"
+    >
+      Tutup
+    </button>
+
+  `);
+
+
+  window.symSeq = [];
+
+}
+
+
+/* ================= PICK SYMBOL ================= */
+
+function pickSym(s){
+
+  window.symSeq.push(s);
+
+
+  $("symStatus").textContent =
+    "Urutan: " +
+    window.symSeq.join(" ");
+
+
+  const target = [
+
+    "🌙",
+    "⭐",
+    "❤️",
+    "⚡"
+
+  ];
+
+
+  const n =
+    window.symSeq.length - 1;
+
+
+  if(
+    window.symSeq[n] !==
+    target[n]
+  ){
+
+    window.symSeq = [];
+
+
+    $("symStatus").textContent =
+      "Salah 😭 — mulai lagi dari awal.";
+
+
+    toast(
+      "Hehe, bukan urutan itu."
+    );
+
+
+    return;
+
+  }
+
+
+  if(
+    window.symSeq.length === 4
+  ){
+
+    puzzleDone = true;
+
+    codeParts[0] = "7";
+
+
+    closePanel();
+
+
+    toast(
+      "Puzzle berhasil! " +
+      "Kamu menemukan angka 7 🔢."
+    );
+
+
+    updateHUD();
+
+  }
+
+}
+
+
+/* ================= TRICK ================= */
+
+function openTrick(){
+
+  if(hearts < 3){
+
+    toast(
+      "Kayaknya hadiah ini belum bisa dibuka..."
+    );
+
+    return;
+
+  }
+
+
+  if(trickDone){
+
+    toast(
+      "Kotak ini sudah pernah dibuka."
+    );
+
+    return;
+
+  }
+
+
+  openPanel(`
+
+    <h2>
+      🎁 Tiga Hadiah Mencurigakan
+    </h2>
+
+
+    <p>
+      Hanya <b>satu</b> yang benar.
+      Dua lainnya cuma mau ngerjain kamu. 😂
+    </p>
+
+
+    <button
+      class="choice"
+      onclick="chooseChest(1)"
+    >
+      🎁 Kotak A —
+      kelihatannya paling aman
+    </button>
+
+
+    <button
+      class="choice"
+      onclick="chooseChest(2)"
+    >
+      🎁 Kotak B —
+      ada tulisan "JANGAN BUKA"
+    </button>
+
+
+    <button
+      class="choice"
+      onclick="chooseChest(3)"
+    >
+      🎁 Kotak C —
+      terlalu mencurigakan
+    </button>
+
+
+    <p class="small">
+      Petunjuk dari papan tadi mungkin berguna...
+    </p>
+
+  `);
+
+}
+
+
+/* ================= CHOOSE CHEST ================= */
+
+function chooseChest(n){
+
+  if(n === 2){
+
+    trickDone = true;
+
+    codeParts[1] = "3";
+
+    closePanel();
+
+
+    toast(
+      "Benar! Kotak B isinya angka 3. 😭"
+    );
+
+
+    updateHUD();
+
+  }
+
+
+  else if(n === 1){
+
+    $("panel").insertAdjacentHTML(
+
+      "beforeend",
+
+      `
+      <p>
+        💥 BOOM!
+        Bukan bom beneran,
+        cuma suara prank.
+        Coba lagi.
+      </p>
+      `
+
+    );
+
+  }
+
+
+  else{
+
+    $("panel").insertAdjacentHTML(
+
+      "beforeend",
+
+      `
+      <p>
+        👻 Kotaknya kosong.
+        Kamu ketipu karena
+        terlalu curiga. 😂
+      </p>
+      `
+
+    );
+
+  }
+
+}
+
+
+/* ================= RIDDLE ================= */
+
+function openRiddle(){
+
+  if(
+    !puzzleDone ||
+    !trickDone
+  ){
+
+    toast(
+      "Ada puzzle lain yang harus diselesaikan dulu."
+    );
+
+    return;
+
+  }
+
+
+  if(riddleDone){
+
+    toast(
+      "Tebak-tebakan sudah selesai."
+    );
+
+    return;
+
+  }
+
+
+  openPanel(`
+
+    <h2>
+      ❓ Tebak-tebakan
+    </h2>
+
+
+    <p>
+      Mana yang paling cocok
+      menggambarkan petualangan ini?
+    </p>
+
+
+    <button
+      class="choice"
+      onclick="answerRiddle(false)"
+    >
+      A.
+      Tinggal klik-klik
+      sampai selesai
+    </button>
+
+
+    <button
+      class="choice"
+      onclick="answerRiddle(true)"
+    >
+      B.
+      Harus eksplor
+      dan kadang kena jebakan
+    </button>
+
+
+    <button
+      class="choice"
+      onclick="answerRiddle(false)"
+    >
+      C.
+      Cuma halaman surat biasa
+    </button>
+
+  `);
+
+}
+
+
+/* ================= ANSWER RIDDLE ================= */
+
+function answerRiddle(ok){
+
+  if(ok){
+
+    riddleDone = true;
+
+    codeParts[2] = "9";
+
+
+    closePanel();
+
+
+    toast(
+      "Benar! Kamu dapat angka 9 🔢."
+    );
+
+
+    updateHUD();
+
+  }
+
+  else{
+
+    toast(
+      "Belum 😭 coba pikir lagi."
+    );
+
+  }
+
+}
+
+
+/* ================= FIND ODD ================= */
+
+function openOdd(){
+
+  if(!riddleDone){
+
+    toast(
+      "Selesaikan tebak-tebakan dulu."
+    );
+
+    return;
+
+  }
+
+
+  if(oddDone){
+
+    toast(
+      "Sudah ketemu benda anehnya."
+    );
+
+    return;
+
+  }
+
+
+  openPanel(`
+
+    <h2>
+      🔎 Cari yang Aneh
+    </h2>
+
+
+    <p>
+      Satu benda di bawah ini
+      tidak cocok dengan yang lain.
+      Klik yang aneh.
+    </p>
+
+
+    <div class="symbols">
+
+      <button
+        class="sym"
+        onclick="oddPick(false)"
+      >
+        🌳
+      </button>
+
+
+      <button
+        class="sym"
+        onclick="oddPick(false)"
+      >
+        🌲
+      </button>
+
+
+      <button
+        class="sym"
+        onclick="oddPick(true)"
+      >
+        🍕
+      </button>
+
+
+      <button
+        class="sym"
+        onclick="oddPick(false)"
+      >
+        🌳
+      </button>
+
+    </div>
+
+  `);
+
+}
+
+
+/* ================= ODD ANSWER ================= */
+
+function oddPick(ok){
+
+  if(ok){
+
+    oddDone = true;
+
+    codeParts[3] = "2";
+
+
+    closePanel();
+
+
+    toast(
+      "Benar! Angka terakhir: 2 🔢."
+    );
+
+
+    updateHUD();
+
+  }
+
+  else{
+
+    toast(
+      "Itu masih cocok sama suasana map. 😂"
+    );
+
+  }
+
+}
+
+
+/* ================= FINAL GATE ================= */
+
+function finalGate(){
+
+  if(
+    !(
+      hearts === 3 &&
+      puzzleDone &&
+      trickDone &&
+      riddleDone &&
+      oddDone
+    )
+  ){
+
+    toast(
+      "🚪 Masih terkunci. " +
+      "Selesaikan semua tantangan dulu."
+    );
+
+    return;
+
+  }
+
+
+  if(gateDone){
+    return;
+  }
+
+
+  openPanel(`
+
+    <h2>
+      🔐 Pintu Rahasia
+    </h2>
+
+
+    <p>
+      Kamu sudah mengumpulkan
+      4 angka dari petualangan tadi.
+    </p>
+
+
+    <p class="small">
+      Masukkan kodenya sesuai urutan
+      kamu mendapatkannya.
+    </p>
+
+
+    <input
+      id="codeInput"
+      class="codeinput"
+      maxlength="4"
+      inputmode="numeric"
+      placeholder="____"
+    >
+
+
+    <br>
+
+
+    <button
+      class="primary"
+      onclick="checkCode()"
+    >
+      BUKA 🚪
+    </button>
+
+
+    <p class="small">
+      Petunjuk: angka yang ditemukan
+      berurutan dari puzzle → hadiah →
+      tebak-tebakan → benda aneh.
+    </p>
+
+  `);
+
+}
+
+
+/* ================= CHECK CODE ================= */
+
+function checkCode(){
+
+  const v =
+    $("codeInput").value;
+
+
+  if(v === "7392"){
+
+    gateDone = true;
+
+
+    closePanel();
+
+
+    updateHUD();
+
+
+    finalScene();
+
+  }
+
+  else{
+
+    toast(
+      "Kode salah. Coba ingat lagi " +
+      "angka yang kamu temukan. 👀"
+    );
+
+  }
+
+}
+
+    /* ================= FINAL SCENE ================= */
+
+function finalScene(){
+
+  openPanel(`
+
+    <div style="font-size:55px">
+      🎉💗🐰
+    </div>
+
+
+    <h1>
+      Petualangan Selesai!
+    </h1>
+
+
+    <p>
+      Licha berhasil melewati semua
+      jebakan, puzzle, dan pertanyaan.
+    </p>
+
+
+    <div class="memory">
+
+      💌 <b>Pesan dari Tian</b>
+
+      <br><br>
+
+      Hai Licha! ❤️
+
+      <br><br>
+
+      Kalau kamu sampai di sini,
+      berarti kamu benar-benar berhasil
+      melewati semuanya. 😂
+
+      <br><br>
+
+      Aku sengaja bikin perjalanan ini
+      agak ribet. Bukan cuma supaya kamu
+      buka website terus klik
+      <i>"next"</i> sampai selesai,
+      tapi supaya kamu benar-benar
+      punya sedikit petualangan di dalamnya.
+
+      <br><br>
+
+      Ada yang harus dicari,
+      ada yang harus ditebak,
+      ada yang ternyata jebakan,
+      dan ada juga yang bikin kamu
+      mungkin mikir,
+      <i>"ini orang ngapain bikin beginian?"</i> 😭
+
+      <br><br>
+
+      Tapi ya...
+      kalau akhirnya kamu sampai di sini,
+      berarti semua usaha kecil ini
+      berhasil juga.
+
+      <br><br>
+
+      Aku cuma mau bilang:
+
+      <br><br>
+
+      <b>
+        Makasih sudah jadi seseorang
+        yang spesial buat aku. ❤️
+      </b>
+
+      <br><br>
+
+      Semoga kamu senyum waktu main game ini,
+      walaupun mungkin sempat kesel
+      gara-gara kena jebakan. 😂
+
+      <br><br>
+
+      Dan kalau suatu saat kamu lupa
+      sama game kecil ini,
+      setidaknya aku pernah bikin
+      sesuatu yang memang khusus
+      buat kamu.
+
+      <br><br>
+
+      — Tian ❤️
+
+    </div>
+
+
+    <p>
+      🏆 Semua misi selesai.
+    </p>
+
+
+    <button
+      class="primary"
+      onclick="location.reload()"
+    >
+      MAIN LAGI 🔄
+    </button>
+
+  `);
+
+
+  confetti();
+
+}
+
+
+/* ================= CONFETTI ================= */
+
+function confetti(){
+
+  for(
+    let i = 0;
+    i < 70;
+    i++
+  ){
+
+    const e =
+      document.createElement("div");
+
+
+    e.textContent =
+      [
+        "💗",
+        "✨",
+        "⭐",
+        "❤️",
+        "🎉"
+      ][
+        Math.floor(
+          Math.random() * 5
+        )
+      ];
+
+
+    e.style.position = "fixed";
+
+    e.style.left =
+      Math.random() * 100 + "vw";
+
+    e.style.top = "-30px";
+
+    e.style.zIndex = "300";
+
+    e.style.fontSize =
+      (15 + Math.random() * 22) + "px";
+
+    e.style.transition =
+      "transform " +
+      (2 + Math.random() * 2) +
+      "s linear, opacity 3s";
+
+
+    document.body.appendChild(e);
+
+
+    setTimeout(function(){
+
+      e.style.transform =
+        "translateY(" +
+        (innerHeight + 80) +
+        "px) rotate(" +
+        (Math.random() * 600) +
+        "deg)";
+
+      e.style.opacity = "0";
+
+    },30);
+
+
+    setTimeout(function(){
+
+      e.remove();
+
+    },4500);
+
+  }
+
+}
+
+
+/* ================= KEYBOARD ================= */
+
+window.addEventListener(
+  "keydown",
+  function(e){
+
+    if(
+      e.key === "ArrowUp" ||
+      e.key.toLowerCase() === "w"
+    ){
+
+      keys.up = true;
+
+    }
+
+
+    if(
+      e.key === "ArrowDown" ||
+      e.key.toLowerCase() === "s"
+    ){
+
+      keys.down = true;
+
+    }
+
+
+    if(
+      e.key === "ArrowLeft" ||
+      e.key.toLowerCase() === "a"
+    ){
+
+      keys.left = true;
+
+    }
+
+
+    if(
+      e.key === "ArrowRight" ||
+      e.key.toLowerCase() === "d"
+    ){
+
+      keys.right = true;
+
+    }
+
+
+    if(e.key === " "){
+
+      e.preventDefault();
+
+      interactNearby();
+
+    }
+
+  }
+);
+
+
+/* ================= KEYBOARD RELEASE ================= */
+
+window.addEventListener(
+  "keyup",
+  function(e){
+
+    if(
+      e.key === "ArrowUp" ||
+      e.key.toLowerCase() === "w"
+    ){
+
+      keys.up = false;
+
+    }
+
+
+    if(
+      e.key === "ArrowDown" ||
+      e.key.toLowerCase() === "s"
+    ){
+
+      keys.down = false;
+
+    }
+
+
+    if(
+      e.key === "ArrowLeft" ||
+      e.key.toLowerCase() === "a"
+    ){
+
+      keys.left = false;
+
+    }
+
+
+    if(
+      e.key === "ArrowRight" ||
+      e.key.toLowerCase() === "d"
+    ){
+
+      keys.right = false;
+
+    }
+
+  }
+);
+
+
+/* ================= MOBILE CONTROL ================= */
+
+function bindHold(id,key){
+
+  const b = $(id);
+
+
+  const on = function(ev){
+
+    ev.preventDefault();
+
+    keys[key] = true;
+
+  };
+
+
+  const off = function(ev){
+
+    ev.preventDefault();
+
+    keys[key] = false;
+
+  };
+
+
+  b.addEventListener(
+    "touchstart",
+    on,
+    {
+      passive:false
+    }
+  );
+
+
+  b.addEventListener(
+    "mousedown",
+    on
+  );
+
+
+  b.addEventListener(
+    "touchend",
+    off,
+    {
+      passive:false
+    }
+  );
+
+
+  b.addEventListener(
+    "touchcancel",
+    off,
+    {
+      passive:false
+    }
+  );
+
+
+  b.addEventListener(
+    "mouseup",
+    off
+  );
+
+
+  b.addEventListener(
+    "mouseleave",
+    off
+  );
+
+}
+
+
+/* ================= BIND BUTTON ================= */
+
+bindHold(
+  "up",
+  "up"
+);
+
+bindHold(
+  "down",
+  "down"
+);
+
+bindHold(
+  "left",
+  "left"
+);
+
+bindHold(
+  "right",
+  "right"
+);
+
+
+/* ================= INITIALIZE ================= */
+
+updateHUD();
+
+move();
+
+</script>
+
+</body>
+</html>
